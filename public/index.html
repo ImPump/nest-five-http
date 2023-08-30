@@ -21,7 +21,12 @@
     <!-- http://localhost:3000/static/index.html -->
     <div class="code-container">
         <pre>
-        <code class="language-js">
+        <code class="language-ts">
+            @Get(':id')
+            urlParam(@Param('id') id: string) {
+              return `received: id=${id}`;
+            }
+
             async function urlParam() {
                 const res = await axios.get('/api/person/1');
                 console.log('urlParam:', res);
@@ -29,7 +34,13 @@
         </code>
     </pre>
         <pre>
-        <code class="language-js">
+        <code class="language-ts">
+            /* find 的路由要放到 :id 的路由前面 */
+            @Get('find')
+            query(@Query('name') name: string, @Query('age') age: number) {
+              return `received: name=${name},age=${age}`;
+            }
+
             async function query() {
                 // 参数通过 params 指定，axios 会做 url encode，不需要自己做。
                 const res = await axios.get('/api/person/find', {
@@ -43,7 +54,14 @@
         </code>
     </pre>
         <pre>
-        <code class="language-js">
+        <code class="language-ts">
+            /* 使用 @Body 装饰器，Nest 会解析请求体，然后注入到 dto 中 */
+            @Post()
+            body(@Body() createPersonDto: CreatePersonDto) {
+              return `received: ${JSON.stringify(createPersonDto)}`;
+            }
+          
+
             async function formUrlEncoded() {
                 // form urlencoded 其实是把 query 字符串放在了 body 里，所以需要做 url encode
                 const res = await axios.post('/api/person', Qs.stringify({
@@ -58,7 +76,13 @@
         </code>
     </pre>
         <pre>
-        <code class="language-js">
+        <code class="language-ts">
+            /* 使用 @Body 装饰器，Nest 会解析请求体，然后注入到 dto 中 */
+            @Post()
+            body(@Body() createPersonDto: CreatePersonDto) {
+              return `received: ${JSON.stringify(createPersonDto)}`;
+            }
+          
             async function json() {
                 // json 需要指定 content-type 为 application/json axiosy已默认
                 const res = await axios.post('/api/person', {
@@ -69,8 +93,40 @@
             }
         </code>
     </pre>
+        <pre>
+        <code class="language-ts">
+            /* Nest 解析 form data 使用 FilesInterceptor 的拦截器，用 @UseInterceptors 装饰器启用，
+            然后通过 @UploadedFiles 来取。非文件的内容，同样是通过 @Body 来取。 */
+            @Post('file')
+            @UseInterceptors(
+              AnyFilesInterceptor({
+                dest: 'uploads/',
+              }),
+            )
+            body2(
+              @Body() createPersonDto: CreatePersonDto,
+              @UploadedFiles() files: Array<Express.Multer.File>,
+            ) {
+              console.log(files);
+              return `received: ${JSON.stringify(createPersonDto)}`;
+            }
 
-    <input id="fileInput" type="file" multiple/>
+            async function formData() {
+                const data = new FormData();
+                data.set('name','FormData');
+                data.set('age', 20);
+                data.set('file1', fileInput.files[0]);
+                data.set('file2', fileInput.files[1]);
+    
+                const res = await axios.post('/api/person/file', data, {
+                    headers: { 'content-type': 'multipart/form-data' }
+                });
+                console.log(res);     
+            }
+        </code>
+    </pre>
+
+        <input id="fileInput" type="file" multiple />
     </div>
 
     <script>
@@ -114,7 +170,7 @@
         const fileInput = document.querySelector('#fileInput');
         async function formData() {
             const data = new FormData();
-            data.set('name','FormData');
+            data.set('name', 'FormData');
             data.set('age', 20);
             data.set('file1', fileInput.files[0]);
             data.set('file2', fileInput.files[1]);
@@ -122,9 +178,9 @@
             const res = await axios.post('/api/person/file', data, {
                 headers: { 'content-type': 'multipart/form-data' }
             });
-            console.log(res);     
+            console.log(res);
         }
-        
+
         /* url param、query是通过 url 传递数据的方式 */
         urlParam();
         query();
