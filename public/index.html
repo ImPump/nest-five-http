@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qs/dist/qs.min.js"></script>
+
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/styles/default.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/highlight.min.js"></script>
+
+    <!-- and it's easy to individually load additional languages -->
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.8.0/build/languages/go.min.js"></script>
+</head>
+
+<body>
+    <!-- http://localhost:3000/static/index.html -->
+    <div class="code-container">
+        <pre>
+        <code class="language-js">
+            async function urlParam() {
+                const res = await axios.get('/api/person/1');
+                console.log('urlParam:', res);
+            }
+        </code>
+    </pre>
+        <pre>
+        <code class="language-js">
+            async function query() {
+                // 参数通过 params 指定，axios 会做 url encode，不需要自己做。
+                const res = await axios.get('/api/person/find', {
+                    params: {
+                        name: 'query',
+                        age: 20
+                    }
+                });
+                console.log('query:', res);
+            }
+        </code>
+    </pre>
+        <pre>
+        <code class="language-js">
+            async function formUrlEncoded() {
+                // form urlencoded 其实是把 query 字符串放在了 body 里，所以需要做 url encode
+                const res = await axios.post('/api/person', Qs.stringify({
+                    name: 'form urlencoded',
+                    age: 20
+                }), {
+                    // 指定 content type 为 application/x-www-form-urlencoded，
+                    headers: { 'content-type': 'application/x-www-form-urlencoded' }
+                });
+                console.log('form urlencoded', res);
+            }
+        </code>
+    </pre>
+        <pre>
+        <code class="language-js">
+            async function json() {
+                // json 需要指定 content-type 为 application/json axiosy已默认
+                const res = await axios.post('/api/person', {
+                    name: '光',
+                    age: 20
+                });
+                console.log('json', res);
+            }
+        </code>
+    </pre>
+
+    <input id="fileInput" type="file" multiple/>
+    </div>
+
+    <script>
+        hljs.highlightAll();
+        async function urlParam() {
+            const res = await axios.get('/api/person/1');
+            console.log('urlParam:', res);
+        }
+
+        async function query() {
+            // 参数通过 params 指定，axios 会做 url encode，不需要自己做。
+            const res = await axios.get('/api/person/find', {
+                params: {
+                    name: 'query',
+                    age: 20
+                }
+            });
+            console.log('query:', res);
+        }
+        async function formUrlEncoded() {
+            // form urlencoded 其实是把 query 字符串放在了 body 里，所以需要做 url encode
+            const res = await axios.post('/api/person', Qs.stringify({
+                name: 'form urlencoded',
+                age: 20
+            }), {
+                // 指定 content type 为 application/x-www-form-urlencoded，
+                headers: { 'content-type': 'application/x-www-form-urlencoded' }
+            });
+            console.log('form urlencoded', res);
+        }
+
+        async function json() {
+            // json 需要指定 content-type 为 application/json axiosy已默认
+            const res = await axios.post('/api/person', {
+                name: 'json',
+                age: 20
+            });
+            console.log('json', res);
+        }
+
+        const fileInput = document.querySelector('#fileInput');
+        async function formData() {
+            const data = new FormData();
+            data.set('name','FormData');
+            data.set('age', 20);
+            data.set('file1', fileInput.files[0]);
+            data.set('file2', fileInput.files[1]);
+
+            const res = await axios.post('/api/person/file', data, {
+                headers: { 'content-type': 'multipart/form-data' }
+            });
+            console.log(res);     
+        }
+        
+        /* url param、query是通过 url 传递数据的方式 */
+        urlParam();
+        query();
+
+
+        /* form urlencoded 、json、form data是通过 body 传递数据的方式 */
+        formUrlEncoded();
+        json();
+        fileInput.onchange = formData;
+
+    </script>
+</body>
+<style>
+    .code-container {
+        padding: 0 2rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    pre {
+        padding: 0;
+        margin: 0;
+    }
+</style>
+
+</html>
